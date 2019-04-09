@@ -1,8 +1,8 @@
 # immery
 
-> Serialize and deserialize your GUI.
+> Serialize and deserialize your React GUI.
 
-[![NPM](https://img.shields.io/npm/v/immery.svg)](https://www.npmjs.com/package/immery) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![NPM](https://img.shields.io/npm/v/immery.svg)](https://www.npmjs.com/package/immery)
 
 ## Install
 
@@ -13,19 +13,58 @@ npm install --save immery
 ## Usage
 
 ```tsx
-import * as React from 'react'
+import React, { Component, useState, useEffect } from 'react'
+import Immery, {useProps, createEmptyData} from 'immery'
 
-import MyComponent from 'immery'
+const Input = () => {
+    const [ input, setInput ] = useProp('input')
 
-class Example extends React.Component {
-  render () {
     return (
-      <MyComponent />
+        <div>
+            input: {input}
+            <div>
+                <input type="text" value={input || ''} onChange={(event) => setInput(event.target.value)} />
+            </div>
+        </div>
     )
-  }
+}
+
+const App = () => {
+    const [ data, setData ] = useState(() => createEmptyData())
+
+    return (
+        <Immery
+            data={data}
+            onChange={setData}
+        >
+            {({ undoable, redoable, undo, redo }) => {
+                return (
+                    <div>
+                        <button
+                            disabled={!undoable}
+                            onClick={() => {
+                                setData(undo())
+                            }}
+                        >
+                            undo
+                        </button>
+                        <button
+                            disabled={!redoable}
+                            onClick={() => {
+                                setData(redo())
+                            }}
+                        >
+                            redo
+                        </button>
+                        <Input />
+                    </div>
+                )
+            }}
+        </Immery>
+    )
 }
 ```
 
 ## License
 
-MIT © [](https://github.com/)
+MIT © [tuoxiansp](https://github.com/tuoxiansp)
