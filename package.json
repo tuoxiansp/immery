@@ -1,6 +1,6 @@
 {
 	"name": "immery",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Serialize and deserialize your GUI.",
 	"author": "",
 	"license": "MIT",
@@ -51,5 +51,7 @@
 		"rollup-plugin-url": "^1.4.0",
 		"typescript": "^2.8.3"
 	},
-	"files": [ "dist" ]
+	"files": [
+		"dist"
+	]
 }
