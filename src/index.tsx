@@ -13,7 +13,7 @@ const { useContext, createContext } = React
 
 type Change = Patch[]
 
-type ImmeryValue = { immery: any; changes: Change[]; inverseChanges: Change[]; processingChanges: Change[] }
+type ImmeryValue = { immery: object; changes: Change[]; inverseChanges: Change[]; processingChanges: Change[] }
 
 export const createEmptyData: () => ImmeryValue = () => ({
     immery: {},
@@ -26,7 +26,7 @@ const ImmeryValueContext = createContext<ImmeryValue>(createEmptyData())
 
 type PropSetter = (propValue: any) => void
 
-type HookProps = (propName: string) => [any, PropSetter]
+type HookProps = <T>(propName: string) => [T, PropSetter]
 
 type ImmeryHandlers = {
     undoable: number
