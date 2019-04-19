@@ -7,6 +7,19 @@ import { produce, applyPatches, setAutoFreeze, Patch } from 'immer'
 
 setAutoFreeze(false)
 
+type ProduceWithPatches = <T>(data: T, mut: (draft: T) => any) => [T, Patch[], Patch[]]
+
+const produceWithPatches: ProduceWithPatches = (data, mut) => {
+    let patches: Patch[] | undefined, reverses: Patch[] | undefined
+
+    const nextData = produce(data, mut, (a, b) => {
+        patches = a
+        reverses = b
+    })
+
+    return [ nextData, patches as Patch[], reverses as Patch[] ]
+}
+
 const doNothing = () => {}
 
 const { useContext, createContext } = React
@@ -55,21 +68,17 @@ export const Immery: React.FunctionComponent<ImmeryPropsType> = ({ data, onChang
         <ImmeryValueContext.Provider value={data}>
             <ImmeryOperateContext.Provider
                 value={(propName) => (propValue) => {
-                    let changes: Change[] = data.changes,
-                        inverseChanges: Change[] = data.inverseChanges,
-                        processingChanges: Change[] = data.processingChanges
+                    const [ nextData, patches, inversePatches ] = produceWithPatches(data, (draft: ImmeryValue) => {
+                        draft.immery[propName] = propValue
+                    })
 
-                    const nextData = produce(
-                        data,
-                        (draft: ImmeryValue) => {
-                            draft.immery[propName] = propValue
-                        },
-                        (patches, inversePatches) => {
-                            processingChanges = []
-                            changes = [ patches, ...changes ]
-                            inverseChanges = [ inversePatches, ...inverseChanges ]
-                        }
-                    )
+                    if (!patches.length) {
+                        return
+                    }
+
+                    const processingChanges: Change[] = []
+                    const changes = [ patches, ...data.changes ]
+                    const inverseChanges = [ inversePatches, ...data.inverseChanges ]
 
                     const applyPatchData = produce(nextData, (draft: ImmeryValue) => {
                         draft.changes = changes
