@@ -37,9 +37,9 @@ export const createEmptyData: () => ImmeryValue = () => ({
 
 const ImmeryValueContext = createContext<ImmeryValue>(createEmptyData())
 
-type PropSetter = <T>(mut: (draft: T) => any) => void
+type PropSetter<T> = (mut: (draft: T) => any) => void
 
-type HookProps = <T>(propName: string) => [T, PropSetter]
+type HookProps = <T>(propName: string) => [T, PropSetter<T>]
 
 type ImmeryHandlers = {
     undoable: number
@@ -54,7 +54,7 @@ type ImmeryPropsType = {
     children: (handlers: ImmeryHandlers) => React.ReactElement
 }
 
-type ProducePropSetterType = ((propName: string) => PropSetter)
+type ProducePropSetterType = (<T>(propName: string) => PropSetter<T>)
 
 const ImmeryOperateContext = createContext<ProducePropSetterType>(() => () => {
     throw new Error('Something is wrong.')
