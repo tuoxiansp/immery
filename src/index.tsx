@@ -69,12 +69,7 @@ export const Immery: React.FunctionComponent<ImmeryPropsType> = ({ data, onChang
             <ImmeryOperateContext.Provider
                 value={(propName) => (mut) => {
                     const [ nextData, patches, inversePatches ] = produceWithPatches(data, (draft: ImmeryValue) => {
-                        const origin = draft.immery[propName]
-                        const res = mut(origin)
-
-                        if (res !== undefined) {
-                            draft.immery[propName] = res === nothing ? undefined : res
-                        }
+                        draft.immery[propName] = mut(draft.immery[propName])
                     })
 
                     if (!patches.length) {
