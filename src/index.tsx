@@ -37,7 +37,7 @@ export const createEmptyData: () => ImmeryValue = () => ({
 
 const ImmeryValueContext = createContext<ImmeryValue>(createEmptyData())
 
-type PropSetter<T> = (mut: (draft: T) => any) => void
+type PropSetter<T> = (mut: (draft: T | undefined) => any) => void
 
 type HookProps = <T>(propName: string) => [T, PropSetter<T>]
 
