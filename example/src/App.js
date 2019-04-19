@@ -3,13 +3,13 @@ import React, { Component, useState, useEffect } from 'react'
 import Immery, { useProp, createEmptyData } from 'immery'
 
 const Input = () => {
-    const [ input, setInput ] = useProp('input')
+    const [ input, mut ] = useProp('input')
 
     return (
         <div>
             input: {input}
             <div>
-                <input type="text" value={input || ''} onChange={(event) => setInput(event.target.value)} />
+                <input type="text" value={input || ''} onChange={(event) => mut(() => event.target.value)} />
             </div>
         </div>
     )

@@ -3,9 +3,9 @@
  */
 
 import * as React from 'react'
-import { produce, applyPatches, setAutoFreeze, Patch } from 'immer'
+import { produce, applyPatches, Patch, nothing } from 'immer'
 
-setAutoFreeze(false)
+export { nothing }
 
 type ProduceWithPatches = <T>(data: T, mut: (draft: T) => any) => [T, Patch[], Patch[]]
 
@@ -37,7 +37,7 @@ export const createEmptyData: () => ImmeryValue = () => ({
 
 const ImmeryValueContext = createContext<ImmeryValue>(createEmptyData())
 
-type PropSetter = (propValue: any) => void
+type PropSetter = <T>(mut: (draft: T) => any) => void
 
 type HookProps = <T>(propName: string) => [T, PropSetter]
 
@@ -67,9 +67,14 @@ export const Immery: React.FunctionComponent<ImmeryPropsType> = ({ data, onChang
     return (
         <ImmeryValueContext.Provider value={data}>
             <ImmeryOperateContext.Provider
-                value={(propName) => (propValue) => {
+                value={(propName) => (mut) => {
                     const [ nextData, patches, inversePatches ] = produceWithPatches(data, (draft: ImmeryValue) => {
-                        draft.immery[propName] = propValue
+                        const origin = draft.immery[propName]
+                        const res = mut(origin)
+
+                        if (res !== undefined) {
+                            draft.immery[propName] = res === nothing ? undefined : res
+                        }
                     })
 
                     if (!patches.length) {
@@ -77,7 +82,7 @@ export const Immery: React.FunctionComponent<ImmeryPropsType> = ({ data, onChang
                     }
 
                     const processingChanges: Change[] = []
-                    const changes = [ patches, ...data.changes ]
+                    const changes = [ patches, ...data.changes.slice(data.processingChanges.length) ]
                     const inverseChanges = [ inversePatches, ...data.inverseChanges ]
 
                     const applyPatchData = produce(nextData, (draft: ImmeryValue) => {
