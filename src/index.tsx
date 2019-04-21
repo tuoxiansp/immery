@@ -61,34 +61,43 @@ const ImmeryOperateContext = createContext<ProducePropSetterType>(() => () => {
 })
 
 export const Immery: React.FunctionComponent<ImmeryPropsType> = ({ data, onChange = doNothing, children }) => {
+    const ref = React.useRef<ImmeryValue>(data)
+    React.useEffect(
+        () => {
+            ref.current = data
+        },
+        [ data ]
+    )
+    const mutPropData: ProducePropSetterType = (propName) => (mut) => {
+        const data = ref.current
+        const [ nextData, patches, inversePatches ] = produceWithPatches(data, (draft: ImmeryValue) => {
+            draft.immery[propName] = mut(draft.immery[propName])
+        })
+
+        if (!patches.length) {
+            return
+        }
+
+        const processingChanges: Change[] = []
+        const changes = [ patches, ...data.changes.slice(data.processingChanges.length) ]
+        const inverseChanges = [ inversePatches, ...data.inverseChanges ]
+
+        const applyPatchData = produce(nextData, (draft: ImmeryValue) => {
+            draft.changes = changes
+            draft.inverseChanges = inverseChanges
+            draft.processingChanges = processingChanges
+        })
+
+        ref.current = applyPatchData
+        onChange(applyPatchData)
+    }
+
     const undoable = data.inverseChanges.length,
         redoable = data.processingChanges.length
 
     return (
         <ImmeryValueContext.Provider value={data}>
-            <ImmeryOperateContext.Provider
-                value={(propName) => (mut) => {
-                    const [ nextData, patches, inversePatches ] = produceWithPatches(data, (draft: ImmeryValue) => {
-                        draft.immery[propName] = mut(draft.immery[propName])
-                    })
-
-                    if (!patches.length) {
-                        return
-                    }
-
-                    const processingChanges: Change[] = []
-                    const changes = [ patches, ...data.changes.slice(data.processingChanges.length) ]
-                    const inverseChanges = [ inversePatches, ...data.inverseChanges ]
-
-                    const applyPatchData = produce(nextData, (draft: ImmeryValue) => {
-                        draft.changes = changes
-                        draft.inverseChanges = inverseChanges
-                        draft.processingChanges = processingChanges
-                    })
-
-                    onChange(applyPatchData)
-                }}
-            >
+            <ImmeryOperateContext.Provider value={mutPropData}>
                 {children({
                     undoable,
                     redoable,
